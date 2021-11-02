@@ -28,7 +28,6 @@
 package com.tencent.devops.process.engine.dao
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.mysql.cj.jdbc.exceptions.MysqlDataTruncation
 import com.tencent.devops.common.api.exception.ErrorCodeException
 import com.tencent.devops.common.api.pojo.ErrorInfo
 import com.tencent.devops.common.api.util.JsonUtil
@@ -131,11 +130,11 @@ class PipelineBuildDao {
                     buildNumAlias
                 ).execute()
             }
-        } catch (e: MysqlDataTruncation) {
+        } catch (t: Throwable) {
             throw ErrorCodeException(
                 statusCode = Response.Status.BAD_REQUEST.statusCode,
-                errorCode = ProcessMessageCode.ERROR_PIPELINE_PARAM_VALUE_TOO_LARGE,
-                defaultMessage = "流水线启动参数内容过大: ${e.message}"
+                errorCode = ProcessMessageCode.ERROR_PIPELINE_START_WITH_ERROR,
+                defaultMessage = "流水线启动准备失败: ${t.message}"
             )
         }
     }
