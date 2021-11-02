@@ -9,13 +9,13 @@
                     <span class="title-item">
                         <span v-if="buildDetail.objectKind === 'schedule'">System</span>
                         <template v-else>
-                            <img :src="`http://dayu.oa.com/avatars/${buildDetail.userId}/profile.jpg`">{{ buildDetail.userId }}
+                            <img :src="`https://dayu.woa.com/avatars/${buildDetail.userId}/profile.jpg`">{{ buildDetail.userId }}
                         </template>
                     </span>
                 </span>
                 <span class="info-data">
                     <span class="info-item text-ellipsis"><icon name="source-branch" size="14"></icon>{{ buildDetail.branch }}</span>
-                    <span class="info-item text-ellipsis"><icon name="clock" size="14"></icon>{{ buildDetail.executeTime | spendTimeFilter }}</span>
+                    <span class="info-item text-ellipsis"><icon name="clock" size="14"></icon>{{ getPipelineExecuteTime() }}</span>
                     <span class="info-item text-ellipsis">
                         <icon name="message" size="14"></icon>
                         {{ buildDetail.buildHistoryRemark || '--' }}
@@ -52,7 +52,7 @@
 <script>
     import { mapState } from 'vuex'
     import { pipelines } from '@/http'
-    import { preciseDiff, timeFormatter, getbuildTypeIcon, getBuildTitle, getBuildSource, goCommit, goMR, goTag } from '@/utils'
+    import { timeFormatter, getbuildTypeIcon, getBuildTitle, getBuildSource, goCommit, goMR, goTag, convertMStoString } from '@/utils'
     import stages from '@/components/stages'
     import { getPipelineStatusClass, getPipelineStatusCircleIconCls } from '@/components/status'
     import register from '@/utils/websocket-register'
@@ -63,10 +63,6 @@
         },
 
         filters: {
-            spendTimeFilter (val) {
-                return preciseDiff(val)
-            },
-
             timeFilter (val) {
                 return timeFormatter(val)
             }
@@ -117,6 +113,10 @@
                 })
             },
 
+            getPipelineExecuteTime () {
+                return `System ${convertMStoString(this.buildDetail.systemElapsed || 0)} + Run ${convertMStoString(this.buildDetail.elementElapsed || 0)}`
+            },
+
             getPipelineBuildDetail () {
                 const params = {
                     pipelineId: this.$route.params.pipelineId,
@@ -132,7 +132,9 @@
                         buildHistoryRemark: res.buildHistoryRemark,
                         executeTime: modelDetail.executeTime,
                         startTime: modelDetail.startTime,
-                        status: modelDetail.status
+                        status: modelDetail.status,
+                        elementElapsed: modelDetail.elementElapsed,
+                        systemElapsed: modelDetail.systemElapsed
                     }
                 }).catch((err) => {
                     this.$bkMessage({ theme: 'error', message: err.message || err })
