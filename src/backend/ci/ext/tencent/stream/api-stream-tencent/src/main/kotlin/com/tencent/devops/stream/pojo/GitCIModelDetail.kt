@@ -40,5 +40,7 @@ data class GitCIModelDetail(
     @ApiModelProperty("构建详情-构建信息", required = true)
     val modelDetail: ModelDetail,
     @ApiModelProperty("构建历史-备注信息")
-    val buildHistoryRemark: String? = null
+    val buildHistoryRemark: String? = null,
+    @ApiModelProperty("执行耗时（系统耗时）")
+    val systemElapsed: Long = 0
 )

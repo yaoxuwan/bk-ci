@@ -46,6 +46,7 @@ import com.tencent.devops.stream.utils.GitCommonUtils
 import com.tencent.devops.process.api.service.ServiceBuildResource
 import com.tencent.devops.process.api.user.TXUserReportResource
 import com.tencent.devops.process.pojo.Report
+import com.tencent.devops.process.pojo.pipeline.ModelDetail
 import com.tencent.devops.process.pojo.report.enums.ReportTypeEnum
 import org.jooq.DSLContext
 import org.slf4j.LoggerFactory
@@ -87,7 +88,7 @@ class StreamDetailService @Autowired constructor(
             channelCode = channelCode
         ).data!!
         val pipeline = getPipelineWithId(userId, gitProjectId, eventBuildRecord.pipelineId)
-        return GitCIModelDetail(pipeline, realEvent, modelDetail)
+        return GitCIModelDetail(pipeline, realEvent, modelDetail, null, modelDetail.getSystemElapsed())
     }
 
     fun getBuildDetail(userId: String, gitProjectId: Long, buildId: String): GitCIModelDetail? {
@@ -111,7 +112,8 @@ class StreamDetailService @Autowired constructor(
             gitProjectPipeline = pipeline,
             gitRequestEvent = realEvent,
             modelDetail = modelDetail,
-            buildHistoryRemark = remark
+            buildHistoryRemark = remark,
+            systemElapsed = modelDetail.getSystemElapsed()
         )
     }
 
@@ -208,5 +210,15 @@ class StreamDetailService @Autowired constructor(
             latestBuildInfo = null,
             latestBuildBranch = null
         )
+    }
+
+    private fun ModelDetail.getSystemElapsed(): Long {
+        var elapsed = 0L
+        model.stages.forEach { stage ->
+            stage.containers.forEach { con ->
+                elapsed += con.systemElapsed ?: 0L
+            }
+        }
+        return elapsed
     }
 }
