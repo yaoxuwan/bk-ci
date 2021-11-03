@@ -11,6 +11,7 @@ object Versions {
     const val Mockito = "1.10.19"
     const val CronUtils = "7.0.1"
     const val Thumbnailator = "0.4.8"
+    const val JsonLib = "2.4"
     const val EmojiJava = "5.1.1"
     const val CommonCsv = "1.8"
     const val CommonCollections4 = "4.4"
