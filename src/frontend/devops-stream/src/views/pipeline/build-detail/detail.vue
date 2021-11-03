@@ -133,8 +133,8 @@
                         executeTime: modelDetail.executeTime,
                         startTime: modelDetail.startTime,
                         status: modelDetail.status,
-                        elementElapsed: modelDetail.elementElapsed,
-                        systemElapsed: modelDetail.systemElapsed
+                        elementElapsed: modelDetail.executeTime,
+                        systemElapsed: res.systemElapsed
                     }
                 }).catch((err) => {
                     this.$bkMessage({ theme: 'error', message: err.message || err })
