@@ -38,7 +38,6 @@ import java.nio.charset.Charset
 import java.util.ArrayDeque
 import kotlin.math.roundToInt
 
-@Suppress("ALL")
 object SystemInfoUtil {
     private val logger = LoggerFactory.getLogger(SystemInfoUtil::class.java)
 
@@ -239,13 +238,14 @@ object SystemInfoUtil {
         var diskUsedPercent = 0
         if (fileStore == null) {
             fileStore = operatingSystem.fileSystem
-                .fileStores
+                .getFileStores(true)
                 .firstOrNull { "/data" == it.mount }
         }
         fileStore?.also {
-            val usableSpace = it.usableSpace
+            it.updateAttributes()
+            val freeSpace = it.freeSpace
             val totalSpace = it.totalSpace
-            diskUsedPercent = (usableSpace * 100 / totalSpace).toInt()
+            diskUsedPercent = (100 - freeSpace * 100 / totalSpace).toInt()
         }
         return diskUsedPercent
     }

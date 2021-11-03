@@ -39,12 +39,13 @@ import com.tencent.devops.common.api.pojo.Result
 import com.tencent.devops.common.api.util.JsonUtil
 import com.tencent.devops.dispatch.docker.pojo.DockerHostBuildInfo
 import com.tencent.devops.dockerhost.config.DockerHostConfig
-import com.tencent.devops.dockerhost.dispatch.AlertApi
 import com.tencent.devops.dockerhost.dispatch.DockerHostBuildLogResourceApi
 import com.tencent.devops.dockerhost.dispatch.DockerHostBuildResourceApi
 import com.tencent.devops.dockerhost.pojo.CheckImageRequest
 import com.tencent.devops.dockerhost.pojo.CheckImageResponse
 import com.tencent.devops.dockerhost.utils.CommonUtils
+import com.tencent.devops.dockerhost.utils.SystemInfoUtil.getAverageLongCpuLoad
+import com.tencent.devops.dockerhost.utils.SystemInfoUtil.getAverageLongMemLoad
 import com.tencent.devops.dockerhost.utils.ThreadPoolUtils
 import com.tencent.devops.dockerhost.utils.SystemInfoUtil
 import com.tencent.devops.process.engine.common.VMUtils
@@ -63,8 +64,7 @@ class DockerHostBuildService(
     private val dockerHostConfig: DockerHostConfig,
     private val environment: Environment,
     private val dockerHostBuildApi: DockerHostBuildResourceApi,
-    private val dockerHostBuildLogResourceApi: DockerHostBuildLogResourceApi,
-    private val alertApi: AlertApi
+    private val dockerHostBuildLogResourceApi: DockerHostBuildLogResourceApi
 ) : AbstractDockerHostBuildService(dockerHostConfig, dockerHostBuildApi) {
 
     companion object {
@@ -166,13 +166,17 @@ class DockerHostBuildService(
             try {
                 val containerName = container.names[0]
                 if (containerName.contains(getDockerRunStopPattern(dockerHostBuildInfo))) {
-                    logger.info("${dockerHostBuildInfo.buildId}|${dockerHostBuildInfo.vmSeqId} " +
-                            "stop dockerRun container, containerId: ${container.id}")
+                    logger.info(
+                        "${dockerHostBuildInfo.buildId}|${dockerHostBuildInfo.vmSeqId} " +
+                            "stop dockerRun container, containerId: ${container.id}"
+                    )
                     httpLongDockerCli.stopContainerCmd(container.id).withTimeout(15).exec()
                 }
             } catch (e: Exception) {
-                logger.error("${dockerHostBuildInfo.buildId}|${dockerHostBuildInfo.vmSeqId} " +
-                        "Stop dockerRun container failed, containerId: ${container.id}", e)
+                logger.error(
+                    "${dockerHostBuildInfo.buildId}|${dockerHostBuildInfo.vmSeqId} " +
+                        "Stop dockerRun container failed, containerId: ${container.id}", e
+                )
             }
         }
     }
@@ -515,14 +519,15 @@ class DockerHostBuildService(
      * 监控系统负载，超过一定阈值，对于占用负载较高的容器，主动降低负载
      */
     fun monitorSystemLoad() {
-        logger.info("Monitor|cpu: ${SystemInfoUtil.getAverageLongCpuLoad()}, mem: ${SystemInfoUtil.getAverageLongMemLoad()}")
-        if (SystemInfoUtil.getAverageLongCpuLoad() > dockerHostConfig.elasticitySystemCpuThreshold ?: 80 ||
-            SystemInfoUtil.getAverageLongMemLoad() > dockerHostConfig.elasticitySystemMemThreshold ?: 80
+        logger.info("Monitor|cpu: ${getAverageLongCpuLoad()}, mem: ${getAverageLongMemLoad()}")
+        if (getAverageLongCpuLoad() > (dockerHostConfig.elasticitySystemCpuThreshold ?: 80) ||
+            getAverageLongMemLoad() > (dockerHostConfig.elasticitySystemMemThreshold ?: 80)
         ) {
             checkContainerStats()
         }
     }
 
+    @Suppress("ComplexMethod", "LoopWithTooManyJumpStatements")
     private fun checkContainerStats() {
         val containerInfo = httpLongDockerCli.listContainersCmd().withStatusFilter(setOf("running")).exec()
         for (container in containerInfo) {
@@ -576,13 +581,15 @@ class DockerHostBuildService(
         cpuUsagePer: Long,
         memUsage: Long
     ) {
-        dockerHostBuildLogResourceApi.sendFormatLog(mapOf(
-            "containerName" to container.names[0],
-            "containerId" to container.id,
-            "cpuUsagePer" to cpuUsagePer.toString(),
-            "memUsagePer" to memUsage.toString(),
-            "statistics" to JsonUtil.toJson(statistics)
-        ))
+        dockerHostBuildLogResourceApi.sendFormatLog(
+            mapOf(
+                "containerName" to container.names[0],
+                "containerId" to container.id,
+                "cpuUsagePer" to cpuUsagePer.toString(),
+                "memUsagePer" to memUsage.toString(),
+                "statistics" to JsonUtil.toJson(statistics)
+            )
+        )
 
         val memReservation = dockerHostConfig.elasticityMemReservation ?: 32 * 1024 * 1024 * 1024L
         val cpuPeriod = dockerHostConfig.elasticityCpuPeriod ?: 10000
@@ -591,8 +598,10 @@ class DockerHostBuildService(
             .withMemoryReservation(memReservation)
             .withCpuPeriod(cpuPeriod)
             .withCpuQuota(cpuQuota).exec()
-        logger.info("<<<< Trigger container reset, containerId: ${container.id}," +
-            " memReservation: $memReservation, cpuPeriod: $cpuPeriod, cpuQuota: $cpuQuota")
+        logger.info(
+            "<<<< Trigger container reset, containerId: ${container.id}," +
+                " memReservation: $memReservation, cpuPeriod: $cpuPeriod, cpuQuota: $cpuQuota"
+        )
     }
 
     fun clearContainers() {
