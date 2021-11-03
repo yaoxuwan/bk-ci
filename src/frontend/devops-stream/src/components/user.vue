@@ -17,7 +17,7 @@
         >
             <p class="user-avatar">
                 <img
-                    :src="user.avatarUrl"
+                    :src="`https://dayu.woa.com/avatars/${user.username}/profile.jpg`"
                     alt="userAvatar"
                 >
                 <span>{{ user.chineseName }}</span>

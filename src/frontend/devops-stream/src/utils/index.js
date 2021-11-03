@@ -60,12 +60,12 @@ export function coverTimer (time, type) {
  */
 export function convertMStoString (time) {
     function getSeconds (sec) {
-        return `${sec}秒`
+        return `${sec}s`
     }
 
     function getMinutes (sec) {
         if (sec / 60 >= 1) {
-            return `${Math.floor(sec / 60)}分${getSeconds(sec % 60)}`
+            return `${Math.floor(sec / 60)}m${getSeconds(sec % 60)}`
         } else {
             return getSeconds(sec)
         }
@@ -73,7 +73,7 @@ export function convertMStoString (time) {
 
     function getHours (sec) {
         if (sec / 3600 >= 1) {
-            return `${Math.floor(sec / 3600)}时${getMinutes(sec % 3600)}`
+            return `${Math.floor(sec / 3600)}h${getMinutes(sec % 3600)}`
         } else {
             return getMinutes(sec)
         }
@@ -81,13 +81,13 @@ export function convertMStoString (time) {
 
     function getDays (sec) {
         if (sec / 86400 >= 1) {
-            return `${Math.floor(sec / 86400)}天${getHours(sec % 86400)}`
+            return `${Math.floor(sec / 86400)}d${getHours(sec % 86400)}`
         } else {
             return getHours(sec)
         }
     }
 
-    return time ? getDays(Math.floor(time / 1000)) : '0秒'
+    return time ? getDays(Math.floor(time / 1000)) : '0s'
 }
 
 export const uuid = () => {
