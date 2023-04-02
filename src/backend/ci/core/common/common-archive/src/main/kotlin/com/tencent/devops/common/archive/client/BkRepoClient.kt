@@ -1113,7 +1113,7 @@ class BkRepoClient constructor(
         fullPath: String,
         taskType: ReplicaType = ReplicaType.EDGE_PULL
     ) {
-        val url = "${getGatewayUrl()}/bkrepo/api/service/replication/api/task/create"
+        val url = "${getGatewayUrl()}/bkrepo/api/service/replication/api/task/edge/create"
         val taskCreateRequest = ReplicaTaskCreateRequest(
             name = "$fullPath-${UUID.randomUUID()}",
             localProjectId = projectId,
