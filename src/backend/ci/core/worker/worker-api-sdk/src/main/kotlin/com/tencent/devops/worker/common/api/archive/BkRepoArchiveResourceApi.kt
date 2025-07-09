@@ -146,7 +146,8 @@ class BkRepoArchiveResourceApi : AbstractBuildResourceApi(), ArchiveSDKApi {
                 destFullPath = destFullPath,
                 token = token,
                 buildVariables = buildVariables,
-                parseAppMetadata = true
+                parseAppMetadata = true,
+                metadata = metadata
             )
         } else {
             uploadBkRepoCustomize(file, destPath, buildVariables)
